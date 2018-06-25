@@ -37,7 +37,7 @@ df.T  # 转置矩阵
 df.sort_index(axis=1, ascending=False)  # axis开启对columns进行排序，ascending表示逆序
 df.sort_values(by='B', ascending=False)  # 对b列进行排序，逆序
 df['A']  # out index,A
-df[0:3]  # out index,A,B,C,D
+print df[0:3]  # out 前三行
 # loc[data,columns]
 print df.loc[dates[0:4]]  # out columns和前4行数据 通过index获取数据
 print df.loc[:, ['A', 'B']]  # out index,A,B的所有数据
@@ -75,6 +75,55 @@ df1.dropna(thresh=4)  # 只保留至少有4个非NA值的行
 
 df1 = df.copy()
 df1.fillna(value=5)  # 将NA值赋值为5
-values = {'A':1,'B':2}
-df1.fillna(value=values) #给每一列的空值设置默认值
+values = {'A': 1, 'B': 2}
+df1.fillna(value=values)  # 给每一列的空值设置默认值
+
+print df.mean(1)  # 行的平均值
+print df.mean()  # 列的平均值
+
+s = pd.Series([1, 3, 4, np.nan, 6, 8], index=dates).shift(2)  # 沿着index平移2个单元
+
+print s
+print df.sub(s, 'index')  # df中的值减去s中的值，如果s中为NA则整行为空，每一列都要减
+
+# 对数据应用函数
+df.apply(lambda x: x.max() - x.min())  # 对每一列数据使用相同的操作，reduce操作，将每列或每行的所有元素（多-》1）
+
+s = pd.Series(np.random.randint(0, 7, size=10))  # 10个0~6的随机数
+print s.value_counts()  # 按照s的值计算每个值的个数
+
+df = pd.DataFrame(np.random.randn(5, 4), index=range(5), columns=list('1234'))
+pieces = [df[:3], df[3:7], df[7:]]
+pd.concat(pieces)  # =df  将这些行拼接在一起
+left = pd.DataFrame({'key': ['foo', 'dd', 'dd'], 'value': [1, 2, 3]})
+right = pd.DataFrame({'key': ['foo', 'dd', 'dd'], 'value': [4, 5, 6]})
+print pd.merge(left, right, on='key')  # 全连接
+
+df = pd.DataFrame(np.random.randn(8, 4), columns=list('ABCD'))
+s = df.iloc[3]  # 编号为3的
+df.append(s, ignore_index=True)  # 添加一条数据
+
+df = pd.DataFrame({
+    'A': ['foo', 'bar', 'foo', 'bar', 'foo', 'bar', 'foo', 'foo'],
+    'B': ['one', 'one', 'two', 'three', 'two', 'two', 'one', 'three'],
+    'C': np.random.randn(8),
+    'D': np.random.randn(8)
+})
+print df
+df.groupby('A').sum()  # 分组求和
+df.groupby(['A', 'B']).sum()
+
+tuples = list(zip(['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],
+                  ['one', 'two', 'one', 'two', 'one', 'two', 'one', 'two']))
+print tuples  # 相当于把两列表示的数据拆成每行表示[('bar', 'one'), ('bar', 'two'),
+# ('baz', 'one'), ('baz', 'two'), ('foo', 'one'), ('foo', 'two'), ('qux', 'one'), ('qux', 'two')]
+
+index = pd.MultiIndex.from_tuples(tuples, names=['first', 'second'])
+df = pd.DataFrame(np.random.randn(8, 2), index=index, columns=['A', 'B'])
+print df
+print df.iloc[0]  # name,A,B,其中name为tuple
+stacked = df.stack()  # 表格形式变成花括号形式 stacked类型变成series
+stacked.unstack(level=-1)  # 花括号变成表格，层级默认是最里面那层-1，最外层应该是0
+
+pd.pivot_table(df, values=[],index=[],columns=[],fill_value=0 ) #具体看印象笔记例子
 
